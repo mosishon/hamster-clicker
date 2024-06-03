@@ -105,3 +105,38 @@ To give you a quick overview of what this project does, here's a GIF preview sho
 
 ## Disclaimer:
     This script is a fun experiment in Android automation.  I am not responsible for any consequences that may arise from its use. Please be aware that some apps or games might have terms of service that prohibit the use of automation tools.
+
+### Note on Dynamic Sizing:
+The dynamic sizing feature may not always work as expected due to variations in screen resolutions and layouts across different devices.
+
+### Static Sizing Instructions:
+For static sizing, follow these steps:
+
+1. **Locate CEO Name, Remaining Energy, and Current Score on Screen**:
+   - Find the coordinates (x, y) for the CEO name, remaining energy, and current score on your device's screen.
+   - Use example images provided in the repository to assist you in identifying these elements.
+
+2. **Update Script Configuration**:
+   - Open the script in a text editor.
+   - Locate the settings related to static sizing.
+   - Update the script with the coordinates (x, y) for the CEO name, remaining energy, and current score.
+
+### Example Images:
+Example images illustrating the CEO name, remaining energy, and current score on the screen are available in the repository. Use these images as references when configuring static sizing.
+
+By following these instructions and using the provided example images, you can effectively configure static sizing for the script to accurately identify and interact with the required elements on the screen.
+
+### Example Static sized for a phone
+
+```python
+phone_sizes = {
+    "poco-x3": {
+        "click_range_x": (200, 800),
+        "click_range_y": (1000, 1700),
+        "energy_range": (110, 350, 1850, 1950),
+        "name_range": (185, 460, 300, 360),
+        "resolution": (1080, 2400),
+        "scores-range": (430, 845, 700, 805),
+    }
+}
+```
