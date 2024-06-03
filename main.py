@@ -8,6 +8,8 @@ import pytesseract
 
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s]  %(message)s")
 
+# Developed By : mosTafa Arshadi
+# Telegram : @mosishon
 
 def crop_image(image_path: str, x: int, to_x: int, y: int, to_y: int) -> Image:
     """
@@ -37,12 +39,14 @@ phone_sizes = {
     "poco-x3": {
         "click_range_x": (200, 800),
         "click_range_y": (1000, 1700),
-        "energy_range": (110, 350, 1850, 1950),
-        "name_range": (185, 460, 300, 360),
-        "resolution": (1080, 2400),
-        "scores-range": (430, 845, 700, 805),
+        "energy_range": (110, 350, 1850, 1950), # (start_x, end_x, start_y, end_y)
+        "name_range": (185, 460, 300, 360),  # (start_x, end_x, start_y, end_y)
+        "resolution": (1080, 2400),  # phone resolution (Required for dynamic size)
+        "scores-range": (430, 845, 700, 805), # (start_x, end_x, start_y, end_y)
     }
 }
+
+# Select Your Phone Config
 phone = phone_sizes["poco-x3"]
 
 dynamic_sizes = True
