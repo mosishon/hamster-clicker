@@ -70,7 +70,7 @@ python main.py
 ## Run the Script:
 1. Save your changes to the script.
 2. Open your terminal and navigate to the directory where the script is saved.
-3. Run the script using the command `python script_name.py`.
+3. Run the script using the command `python main.py`.
 
 ## Monitoring and Pausing:
 1. The script will automatically detect if the specified app is running and if there is enough energy.
