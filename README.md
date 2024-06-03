@@ -17,6 +17,11 @@ This Python script automates clicking on your Android device using ADB. It's des
 *   Potential for automation of tasks
 *   Customizable for different screen resolutions
 
+# Preview:
+To give you a quick overview of what this project does, here's a GIF preview showing the script in action. The GIF demonstrates the script interacting with the app, performing clicks, and pausing when necessary.
+
+![Project Preview](vid.gif)
+
 ## Installation & Setup
 
 ### Prerequisites
@@ -24,7 +29,7 @@ This Python script automates clicking on your Android device using ADB. It's des
 *   Python 3.8+
 *   ADB (Android Debug Bridge) installed and in your system's PATH
 *   Libraries:
-    *   Pillow (PIL): `pip install Pillow`
+    *   Pillow (PIL): `pip install pillow`
     *   pytesseract: `pip install pytesseract`
 *   (Optional) Tesseract OCR engine if not already installed
 
@@ -46,7 +51,7 @@ This Python script automates clicking on your Android device using ADB. It's des
 ### Example Command
 
 ```bash
-python script_name.py
+python main.py
 ```
 # Workflow
 ## Device Connection:
@@ -89,12 +94,7 @@ python script_name.py
 ## App Detection Issues:
 - Verify that the `my_name` variable in the script matches your in-game name exactly (case-sensitive).
 - If the app is not detected, the script will pause and you'll need to manually reopen it.
-# Project Preview
 
-## GIF Preview:
-To give you a quick overview of what this project does, here's a GIF preview showing the script in action. The GIF demonstrates the script interacting with the app, performing clicks, and pausing when necessary.
-
-![Project Preview](vid.gif)
 
 
 
@@ -133,10 +133,10 @@ phone_sizes = {
     "poco-x3": {
         "click_range_x": (200, 800),
         "click_range_y": (1000, 1700),
-        "energy_range": (110, 350, 1850, 1950),
-        "name_range": (185, 460, 300, 360),
-        "resolution": (1080, 2400),
-        "scores-range": (430, 845, 700, 805),
+        "energy_range": (110, 350, 1850, 1950), # (start_x, end_x, start_y, end_y)
+        "name_range": (185, 460, 300, 360),  # (start_x, end_x, start_y, end_y)
+        "resolution": (1080, 2400),  # phone resolution (Required for dynamic size)
+        "scores-range": (430, 845, 700, 805), # (start_x, end_x, start_y, end_y)
     }
 }
 ```
