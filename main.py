@@ -2,7 +2,8 @@ import os
 import time
 import random
 import logging
-
+import subprocess
+import io
 from PIL import Image
 import pytesseract
 
@@ -11,27 +12,7 @@ logging.basicConfig(level=logging.INFO, format="[%(levelname)s]  %(message)s")
 # Developed By : mosTafa Arshadi
 # Telegram : @mosishon
 
-def crop_image(image_path: str, x: int, to_x: int, y: int, to_y: int) -> Image:
-    """
-    Crop the image specified by the image_path to the box defined by (x, to_x, y, to_y)
 
-    Args:
-    image_path (str): Path to the image file.
-    x (int): The starting x-coordinate of the crop box.
-    to_x (int): The ending x-coordinate of the crop box.
-    y (int): The starting y-coordinate of the crop box.
-    to_y (int): The ending y-coordinate of the crop box.
-
-    Returns:
-    Image: The cropped image.
-    """
-    # Open the image file
-    with Image.open(image_path) as img:
-        # Define the crop box
-        crop_box = (x, y, to_x, to_y)
-        # Crop the image using the defined box
-        cropped_img = img.crop(crop_box)
-        return cropped_img
 
 
 # Example usage
@@ -39,10 +20,10 @@ phone_sizes = {
     "poco-x3": {
         "click_range_x": (200, 800),
         "click_range_y": (1000, 1700),
-        "energy_range": (110, 350, 1850, 1950), # (start_x, end_x, start_y, end_y)
+        "energy_range": (110, 350, 1850, 1950),  # (start_x, end_x, start_y, end_y)
         "name_range": (185, 460, 300, 360),  # (start_x, end_x, start_y, end_y)
         "resolution": (1080, 2400),  # phone resolution (Required for dynamic size)
-        "scores-range": (430, 845, 700, 805), # (start_x, end_x, start_y, end_y)
+        "scores-range": (430, 845, 700, 805),  # (start_x, end_x, start_y, end_y)
     }
 }
 
@@ -119,124 +100,115 @@ def random_click() -> None:
     )  # Generate random y position
     os.popen(f"adb shell input tap {x} {y}")
 
+def crop_image(image_io: io.BytesIO, x: int, to_x: int, y: int, to_y: int) -> Image:
+    """
+    Crop the image specified by the image_path to the box defined by (x, to_x, y, to_y)
 
-def extract_text_from_image(image_path: str, tesseract_cmd: str | None = None) -> str:
+    Args:
+    image_io (str): image file in bytes io.
+    x (int): The starting x-coordinate of the crop box.
+    to_x (int): The ending x-coordinate of the crop box.
+    y (int): The starting y-coordinate of the crop box.
+    to_y (int): The ending y-coordinate of the crop box.
+
+    Returns:
+    Image: The cropped image.
+    """
+    # Open the image file
+    with Image.open(image_io) as img:
+        # Define the crop box
+        crop_box = (x, y, to_x, to_y)
+        # Crop the image using the defined box
+        cropped_img = img.crop(crop_box)
+        return cropped_img
+    
+    
+def extract_text_from_image(img: Image, tesseract_cmd: str | None = None) -> str:
     """
     Extract text from an image using Tesseract OCR.
 
     Args:
-    image_path (str): Path to the image file.
-    tesseract_cmd (str, optional): Path to the tesseract executable. Required on Windows.
+        img (PIL.Image): Image file.
+        tesseract_cmd (str, optional): Path to the tesseract executable. Required on Windows.
 
     Returns:
-    str: The extracted text from the image.
+        str: The extracted text from the image.
     """
     if tesseract_cmd:
         pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
 
-    img = Image.open(image_path)
-
     text = pytesseract.image_to_string(img)
-
     return text
 
 
-def screen_shot(fname: str) -> str:
+def screenshot() -> io.BytesIO:
     """
-    Capture a screenshot from a connected Android device using ADB (Android Debug Bridge).
-
-    This function captures the current screen of the connected Android device and saves it to the specified file.
-
-    Args:
-        fname (str): The filename (including path) where the screenshot will be saved.
+    Capture a screenshot from an Android device using ADB.
 
     Returns:
-        str: The output from the ADB command, which may include error messages or confirmations.
+        io.BytesIO: The screenshot data as a BytesIO object.
     """
-    os.popen(f"adb exec-out screencap -p > {fname}").read()
-    return fname
+    result = subprocess.run(
+        ["adb", "exec-out", "screencap", "-p"], stdout=subprocess.PIPE
+    )
+    screenshot_data = result.stdout
+    return io.BytesIO(screenshot_data)
 
 
-def capture_name(remove_images: bool = False) -> str:
+def capture_name(screen_shot: io.BytesIO) -> str:
     """
     Capture and extract the name text from a screenshot.
 
-    This function captures a screenshot, crops the image to the specified name range,
-    and uses OCR to extract the text. Optionally, it can remove the images after processing.
+    This function crops the image to the specified name range and uses OCR to extract the text.
 
     Args:
-        remove_images (bool): If True, remove the images after extracting text. Default is False.
+        screen_shot (io.BytesIO): The screenshot data.
 
     Returns:
         str: The extracted name text.
     """
-    screen_shot("a2.png")
     cropped_image = crop_image(
-        "a2.png", name_range[0], name_range[1], name_range[2], name_range[3]
+        screen_shot, name_range[0], name_range[1], name_range[2], name_range[3]
     )
-    cropped_image.save("a2_1.png")
-    text = extract_text_from_image("a2_1.png").strip()
-    if remove_images:
-        os.remove("a2.png")
-        os.remove("a2_1.png")
+    text = extract_text_from_image(cropped_image).strip()
     return text
 
 
-def caputre_energy(remove_images: bool = False) -> str:
+def capture_energy(screen_shot: io.BytesIO) -> str:
     """
     Capture and extract the energy text from a screenshot.
 
-    This function captures a screenshot, crops the image to the specified energy range,
-    and uses OCR to extract the text. Optionally, it can remove the images after processing.
+    This function crops the image to the specified energy range and uses OCR to extract the text.
 
     Args:
-        remove_images (bool): If True, remove the images after extracting text. Default is False.
+        screen_shot (io.BytesIO): The screenshot data.
 
     Returns:
         str: The extracted energy text.
     """
-    screen_shot("energy.png")
     cropped_image = crop_image(
-        "energy.png",
-        energy_range[0],
-        energy_range[1],
-        energy_range[2],
-        energy_range[3],
+        screen_shot, energy_range[0], energy_range[1], energy_range[2], energy_range[3]
     )
-    cropped_image.save("remains_energy.png")
-    text = extract_text_from_image("remains_energy.png").strip()
-    if remove_images:
-        os.remove("remains_energy.png")
-        os.remove("energy.png")
+    text = extract_text_from_image(cropped_image).strip()
     return text
 
 
-def caputre_current_scores(remove_images: bool = False) -> str:
+def capture_current_scores(screen_shot: io.BytesIO) -> str:
     """
     Capture and extract the current scores text from a screenshot.
 
-    This function captures a screenshot, crops the image to the specified scores range,
-    and uses OCR to extract the text. Optionally, it can remove the images after processing.
+    This function crops the image to the specified scores range and uses OCR to extract the text.
 
     Args:
-        remove_images (bool): If True, remove the images after extracting text. Default is False.
+        screen_shot (io.BytesIO): The screenshot data.
 
     Returns:
         str: The extracted scores text.
     """
-    screen_shot("scores.png")
     cropped_image = crop_image(
-        "scores.png",
-        scores_range[0],
-        scores_range[1],
-        scores_range[2],
-        scores_range[3],
+        screen_shot, scores_range[0], scores_range[1], scores_range[2], scores_range[3]
     )
-    cropped_image.save("current_scored.png")
-    text = extract_text_from_image("current_scored.png").strip()
-    if remove_images:
-        os.remove("current_scored.png")
-        os.remove("scores.png")
+    text = extract_text_from_image(cropped_image).strip()
     numbers = "".join((i for i in text if i.isdigit()))
     if numbers.isdigit():
         numbers = int(numbers)
@@ -249,55 +221,47 @@ def main():
     i = 0
     total_click = 0
     start_score = 0
+    exited_try = 0
+    enrgy_retry = 0
     while 1:
+        logging.debug("Capturing screenshot")
+        screen = screenshot()
+        logging.debug("Screenshot captured")
 
         # Checking app is open or no in loop
-        retry = 0
-        while 1:
-            tt = capture_name()
-            if tt != my_name:
-                retry += 1
-                logging.warning(f"You exited app.waiting for 1s (Total wait {retry}s)")
-                time.sleep(1)
-                if retry % 15 == 0:
-                    os.system("cls")
-            else:
-                if start_score == 0:
-                    start_score = caputre_current_scores()
+        logging.debug("Checking app is open")
 
-                break
+        tt = capture_name(screen)
+        if tt != my_name:
+            exited_try += 1
+            logging.warning(f"You exited app.waiting for 1s (Total wait {exited_try}s)")
+            time.sleep(1)
+            if exited_try % 15 == 0:
+                os.system("cls")
+            continue
+        logging.debug("Checking enough energy")
+
+        tt = capture_energy(screen)
+        if (
+            tt.split("/")[0].strip().isdigit()
+            and int(tt.split("/")[0].strip()) < _coin_threshhold
+        ):  # Check if remain energy lower then _coin_threshhold
+            enrgy_retry += 1
+
+            logging.warning(
+                f"Waiting 60s for energy. current energy : {int(tt.split('/')[0].strip())} / {int(tt.split('/')[1].strip())} minimum energy required : {_coin_threshhold} ({enrgy_retry})"
+            )
+            time.sleep(60)
+            if enrgy_retry % 5 == 0:
+                os.system("cls")
+            continue
+
         for _ in range(_click_per_loop):
             random_click()
         logging.info(
-            f"{_click_per_loop} Clicked! Total Click: {total_click}, Current Scores : {caputre_current_scores()} Start score : {start_score}"
+            f"{_click_per_loop} Clicked! Total Click: {total_click}, Current Scores : {capture_current_scores(screen)} Start score : {start_score}"
         )
         total_click += _click_per_loop
-
-        i += 1
-
-        if i == 5:
-            time.sleep(_sleep_time)
-            i = 0
-
-            # Check energy is lower then _coin_threshhold
-            retry = 0
-
-            while 1:
-                tt = caputre_energy()
-                if (
-                    tt.split("/")[0].strip().isdigit()
-                    and int(tt.split("/")[0].strip()) < _coin_threshhold
-                ):  # Check if remain energy lower then _coin_threshhold
-                    retry += 1
-
-                    logging.warning(
-                        f"Waiting 3s for energy. current energy : {int(tt.split('/')[0].strip())} / {int(tt.split('/')[1].strip())} minimum energy required : {_coin_threshhold} ({retry})"
-                    )
-                    time.sleep(3)
-                    if retry % 5 == 0:
-                        os.system("cls")
-                else:
-                    break
 
 
 if __name__ == "__main__":
