@@ -218,7 +218,6 @@ def capture_current_scores(screen_shot: io.BytesIO) -> str:
 
 
 def main():
-    i = 0
     total_click = 0
     start_score = 0
     exited_try = 0
@@ -226,6 +225,8 @@ def main():
     while 1:
         logging.debug("Capturing screenshot")
         screen = screenshot()
+        if start_score == 0:
+            start_score = capture_current_scores(screen)
         logging.debug("Screenshot captured")
 
         # Checking app is open or no in loop
