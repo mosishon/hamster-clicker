@@ -23,7 +23,7 @@ phone_sizes = {
         "energy_range": (110, 350, 1850, 1950),  # (start_x, end_x, start_y, end_y)
         "name_range": (185, 460, 300, 360),  # (start_x, end_x, start_y, end_y)
         "resolution": (1080, 2400),  # phone resolution (Required for dynamic size)
-        "scores-range": (430, 845, 700, 805),  # (start_x, end_x, start_y, end_y)
+        "scores_range": (430, 845, 700, 805),  # (start_x, end_x, start_y, end_y)
     }
 }
 
@@ -258,7 +258,7 @@ def main():
         
         for _ in range(_click_per_loop):
             random_click()
-            
+
         logging.info(
             f"{_click_per_loop} Clicked! Total Click: {total_click}, Current Scores : {capture_current_scores(screen)} Start score : {start_score}"
         )
