@@ -72,7 +72,7 @@ else:
 
     scores_range = phone["scores_range"]
 
-_click_per_loop = 15
+_click_per_loop = 5
 _sleep_time = 0.25
 _coin_threshhold = 300
 
@@ -122,7 +122,7 @@ def crop_image(image_io: io.BytesIO, x: int, to_x: int, y: int, to_y: int) -> Im
         cropped_img = img.crop(crop_box)
         return cropped_img
     
-    
+
 def extract_text_from_image(img: Image, tesseract_cmd: str | None = None) -> str:
     """
     Extract text from an image using Tesseract OCR.
@@ -255,13 +255,15 @@ def main():
             if enrgy_retry % 5 == 0:
                 os.system("cls")
             continue
-
+        
         for _ in range(_click_per_loop):
             random_click()
+            
         logging.info(
             f"{_click_per_loop} Clicked! Total Click: {total_click}, Current Scores : {capture_current_scores(screen)} Start score : {start_score}"
         )
         total_click += _click_per_loop
+        time.sleep(_sleep_time)
 
 
 if __name__ == "__main__":
